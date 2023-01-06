@@ -1,0 +1,93 @@
+﻿@model ContactVM
+
+@{
+    ViewData["Title"] = "Contact Page";
+}
+
+@section Head {
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <script src="~/jquery/jquery.min.js"></script>
+    <script src="~/jquery-validate/jquery.validate.min.js"></script>
+    <script src="~/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}
+
+<div class="shadow-lg rounded-2 border p-4">
+    <h2>Bize Ulaşın</h2>
+    @*<form asp-controller="Home" asp-action="Contact" method="post">*@
+    <form id="myform" class="pt-4">
+         <div class="row">
+            <div asp-validation-summary="ModelOnly" class="col-12 p-4">
+            </div>
+            <div class="col-sm-6 col-12 pb-4 position-relative mb-3">
+                <input asp-for="Name" class="form-control" placeholder="Adayın Adı Soyadı"/>
+                <span asp-validation-for="Name" class="position-absolute text-danger" style="font-size:0.85rem"></span>
+            </div>
+                <div class="col-sm-6 col-12 pb-4 position-relative mb-3">
+                <input asp-for="PhoneNumber" class="form-control" placeholder="Telefon Numarası (5XXXXXXXX)"/>
+                    <span asp-validation-for="PhoneNumber" class="position-absolute text-danger" style="font-size:0.85rem"></span>
+            </div>
+                <div class="col-12 pb-4 position-relative mb-3">
+                <input asp-for="Email" class="form-control" placeholder="E-Posta Adresi"/>
+                    <span asp-validation-for="Email" class="position-absolute text-danger" style="font-size:0.85rem"></span>
+            </div>
+                <div class="col-12 pb-4 position-relative mb-3">
+                <textarea asp-for="Message" class="form-control" placeholder="Mesaj...." rows="5"></textarea>
+                    <span asp-validation-for="Message" class="position-absolute text-danger" style="font-size:0.85rem"></span>
+            </div>
+            <div class="col-12">
+                <button id="submitBtn" class="bg-info w-100 border-0 rounded-3 py-2 text-white text-uppercase">
+                        <b>Gönder</b>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    const form = $("#myform")
+    form.submit(function (event) {
+        if(form.valid()) {
+            event.preventDefault()
+                postForm()
+        }
+    });
+
+    function postForm () {
+            document.querySelector('#submitBtn').setAttribute("disabled", "disabled")
+
+        const body = {
+            Name: form.find('input[name="Name"]').val(),
+            PhoneNumber: form.find('input[name="PhoneNumber"]').val(),
+            Email: form.find('input[name="Email"]').val(),
+            Message: form.find('textarea[name="Message"]').val()
+        }
+
+        fetch('/Home/Contact', {
+            body: JSON.stringify(body),
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }).then((resp) => resp.json()).then((data) => {
+                document.querySelector('#submitBtn').removeAttribute("disabled")
+            const body = JSON.parse(data.body)
+            if (data.status == 'OK' && body.isSuccessful == true) {
+                Swal.fire(
+                    'Bilgilendirme',
+                    'Göndermiş olduğunuz form başarı ile kaydedildi.',
+                    'success'
+                )
+                form.find('input[name="Name"]').val('')
+                form.find('input[name="PhoneNumber"]').val('')
+                form.find('input[name="Email"]').val('')
+                form.find('textarea[name="Message"]').val('')
+            } else {
+                Swal.fire(
+                    'Hata',
+                    body.message,
+                    'error'
+                )
+            }
+        })
+    }
+</script>
